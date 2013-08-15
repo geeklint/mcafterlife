@@ -170,14 +170,19 @@ class Instance(threading.Thread):
                 if ins_id < get_entry_world():
                     if not options.keep:
                         delete = True
-                    break
+                    break # stop server (unreachable)
+                with get_data as data:
+                    if not any(u['world'] == ins_id for u in data['users']):
+                        break # stop server (no players)
                 disp.log.d('putting instance %d to sleep' % ins_id)
                 wakeup.clear()
                 if stop_proc(process, disp):
-                    wakeup.wait()
-                    disp.log.d('waking up instance %d' % ins_id)
-                    cont_proc(process)
-        else: # while
+                    if wakeup.wait(timeout=120):
+                        disp.log.d('waking up instance %d' % ins_id)
+                        cont_proc(process)
+                    else:
+                        break # stop server (timeout)
+        else: # out of main loop
             do_stop = False # already stopped
         if do_stop:
             disp.log.i('stopping instance %d' % ins_id)
