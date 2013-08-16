@@ -181,6 +181,7 @@ class Instance(threading.Thread):
                         disp.log.d('waking up instance %d' % ins_id)
                         cont_proc(process)
                     else:
+                        cont_proc(process)
                         break # stop server (timeout)
         else: # out of main loop
             do_stop = False # already stopped
